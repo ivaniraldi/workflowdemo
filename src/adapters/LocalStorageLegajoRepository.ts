@@ -16,6 +16,67 @@ export class LocalStorageLegajoRepository implements LegajoPort {
     const allDiscounts: Discount[] = data ? JSON.parse(data) : [];
     return allDiscounts.filter(d => d.personId === personId);
   }
+
+  async addPerson(person: Omit<Person, "id">): Promise<Person> {
+    const persons = await this.getAllPersons();
+    const newPerson: Person = {
+      ...person,
+      id: crypto.randomUUID(),
+    };
+    persons.push(newPerson);
+    localStorage.setItem(PERSONS_KEY, JSON.stringify(persons));
+    return newPerson;
+  }
+
+  async updatePerson(id: string, data: Partial<Person>): Promise<Person | null> {
+    const persons = await this.getAllPersons();
+    const index = persons.findIndex(p => p.id === id);
+    if (index === -1) return null;
+
+    persons[index] = { ...persons[index], ...data };
+    localStorage.setItem(PERSONS_KEY, JSON.stringify(persons));
+    return persons[index];
+  }
+
+  async deletePerson(id: string): Promise<boolean> {
+    const persons = await this.getAllPersons();
+    const filtered = persons.filter(p => p.id !== id);
+    if (filtered.length === persons.length) return false;
+
+    localStorage.setItem(PERSONS_KEY, JSON.stringify(filtered));
+
+    // Also delete associated discounts
+    const discountsData = localStorage.getItem(DISCOUNTS_KEY);
+    if (discountsData) {
+      const discounts: Discount[] = JSON.parse(discountsData);
+      const filteredDiscounts = discounts.filter(d => d.personId !== id);
+      localStorage.setItem(DISCOUNTS_KEY, JSON.stringify(filteredDiscounts));
+    }
+
+    return true;
+  }
+
+  async addDiscount(discount: Omit<Discount, "id">): Promise<Discount> {
+    const data = localStorage.getItem(DISCOUNTS_KEY);
+    const discounts: Discount[] = data ? JSON.parse(data) : [];
+    const newDiscount: Discount = {
+      ...discount,
+      id: crypto.randomUUID(),
+    };
+    discounts.push(newDiscount);
+    localStorage.setItem(DISCOUNTS_KEY, JSON.stringify(discounts));
+    return newDiscount;
+  }
+
+  async deleteDiscount(id: string): Promise<boolean> {
+    const data = localStorage.getItem(DISCOUNTS_KEY);
+    const discounts: Discount[] = data ? JSON.parse(data) : [];
+    const filtered = discounts.filter(d => d.id !== id);
+    if (filtered.length === discounts.length) return false;
+
+    localStorage.setItem(DISCOUNTS_KEY, JSON.stringify(filtered));
+    return true;
+  }
 }
 
 // Seed data initializer

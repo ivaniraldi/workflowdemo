@@ -1,14 +1,18 @@
 import { useState, useEffect } from "react";
 import { DependencyProvider } from "./context";
 import { Layout } from "./ui/components";
-import { CargarHorasView, AuditoriaView, LiquidacionView, RecibosView } from "./ui/views";
+import { CargarHorasView, AuditoriaView, LiquidacionView, RecibosView, EmpleadosView, CoeficientesView } from "./ui/views";
 import { seedLegajoData } from "./adapters";
 
 function AppContent() {
-  const [currentTab, setCurrentTab] = useState("cargar-horas");
+  const [currentTab, setCurrentTab] = useState("empleados");
 
   function renderView() {
     switch (currentTab) {
+      case "empleados":
+        return <EmpleadosView />;
+      case "coeficientes":
+        return <CoeficientesView />;
       case "cargar-horas":
         return <CargarHorasView />;
       case "auditoria":
@@ -18,7 +22,7 @@ function AppContent() {
       case "recibos":
         return <RecibosView />;
       default:
-        return <CargarHorasView />;
+        return <EmpleadosView />;
     }
   }
 
